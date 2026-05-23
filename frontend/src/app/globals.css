@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  --otto-orange: #f97316;
+  --otto-orange-light: #ff8a1f;
+  --scrollbar-track: rgba(255, 255, 255, 0.06);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(249, 115, 22, 0.35);
+  color: #ffffff;
+}
+
+/* Otto Labs custom scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(249, 115, 22, 0.7) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    135deg,
+    var(--otto-orange),
+    var(--otto-orange-light)
+  );
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ff7a1a, #ff9a3d);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.otto-scrollbar {
+  scrollbar-width: thin;
+}
+
+.otto-scrollbar::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+@keyframes admin-menu-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.admin-menu-slide-in {
+  animation: admin-menu-slide-in 180ms ease-out;
+}

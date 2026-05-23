@@ -1,0 +1,6 @@
+diff --git a/dist/index.js b/dist/index.js
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1 +1 @@
+-process.versions.bun||_t.register?.((0,Dt.pathToFileURL)(require.resolve("@tailwindcss/node/esm-cache-loader")));0&&(module.exports={Features,Instrumentation,Polyfills,__unstable__loadDesignSystem,compile,compileAst,env,loadModule,normalizePath,optimize,toSourceMap});
++process.versions.bun||(_t.registerHooks?.((0,Dt.pathToFileURL)(require.resolve("@tailwindcss/node/esm-cache-loader")))??_t.register?.((0,Dt.pathToFileURL)(require.resolve("@tailwindcss/node/esm-cache-loader"))));0&&(module.exports={Features,Instrumentation,Polyfills,__unstable__loadDesignSystem,compile,compileAst,env,loadModule,normalizePath,optimize,toSourceMap});
