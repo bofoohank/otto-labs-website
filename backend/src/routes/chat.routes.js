@@ -126,6 +126,8 @@ function sendDelayedBotReply(req, conversationId, userId, content, setting) {
       }
 
       const botReply = getBotReply(content, setting);
+      syncConversationBotAvatar(conversation, setting.botAvatar);
+
       const botAttachments = botReply.mediaUrl
         ? [
             {
@@ -173,6 +175,22 @@ function emitToUser(req, userId, eventName, payload) {
   if (req.io) {
     req.io.to(`user-${userId}`).emit(eventName, payload);
   }
+}
+
+function syncConversationSenderAvatar(conversation, userId, avatar) {
+  conversation.messages.forEach((message) => {
+    if (message.senderId?.toString() === userId.toString()) {
+      message.senderAvatar = avatar || "";
+    }
+  });
+}
+
+function syncConversationBotAvatar(conversation, avatar) {
+  conversation.messages.forEach((message) => {
+    if (message.senderRole === "Bot") {
+      message.senderAvatar = avatar || "";
+    }
+  });
 }
 
 async function getPopulatedConversation(conversationId) {
@@ -307,6 +325,8 @@ router.post(
           size: 0,
         });
       }
+
+      syncConversationSenderAvatar(conversation, req.user._id, req.user.avatar);
 
       conversation.messages.push({
         senderRole: "Member",

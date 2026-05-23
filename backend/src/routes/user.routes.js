@@ -1,5 +1,6 @@
 import express from "express";
 
+import ChatConversation from "../models/ChatConversation.js";
 import User from "../models/User.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { sendMail } from "../services/mail.service.js";
@@ -31,6 +32,64 @@ function toPublicUser(user) {
   };
 }
 
+async function getPopulatedConversation(conversationId) {
+  return ChatConversation.findById(conversationId)
+    .populate("userId", "name username email phone role avatar")
+    .populate("assignedTo", "name username role avatar");
+}
+
+function emitToUser(req, userId, eventName, payload) {
+  if (req.io) {
+    req.io.to(`user-${userId}`).emit(eventName, payload);
+  }
+}
+
+function emitToAdmins(req, eventName, payload) {
+  if (req.io) {
+    req.io.to("admin-room").emit(eventName, payload);
+  }
+}
+
+async function syncSenderAvatar(req, userId, avatar) {
+  const conversations = await ChatConversation.find({
+    "messages.senderId": userId,
+  }).select("_id");
+
+  if (conversations.length === 0) {
+    return;
+  }
+
+  await ChatConversation.updateMany(
+    {
+      "messages.senderId": userId,
+    },
+    {
+      $set: {
+        "messages.$[message].senderAvatar": avatar || "",
+      },
+    },
+    {
+      arrayFilters: [
+        {
+          "message.senderId": userId,
+        },
+      ],
+    },
+  );
+
+  const populatedConversations = await Promise.all(
+    conversations.map((conversation) =>
+      getPopulatedConversation(conversation._id),
+    ),
+  );
+
+  populatedConversations.filter(Boolean).forEach((conversation) => {
+    emitToUser(req, conversation.userId._id, "chat:updated", conversation);
+    emitToAdmins(req, "chat:updated", conversation);
+    emitToAdmins(req, "ticket:updated", conversation);
+  });
+}
+
 router.get("/me", authMiddleware, async (req, res) => {
   return res.json({
     user: req.user,
@@ -48,6 +107,8 @@ router.patch("/me", authMiddleware, async (req, res) => {
         message: "Không tìm thấy tài khoản.",
       });
     }
+
+    const previousAvatar = user.avatar || "";
 
     if (name) user.name = name;
     if (avatar !== undefined) user.avatar = avatar;
@@ -95,6 +156,10 @@ router.patch("/me", authMiddleware, async (req, res) => {
     }
 
     await user.save();
+
+    if (avatar !== undefined && avatar !== previousAvatar) {
+      await syncSenderAvatar(req, user._id, avatar);
+    }
 
     return res.json({
       message: "Cập nhật hồ sơ thành công.",

@@ -66,10 +66,58 @@ function emitToAdmins(req, eventName, payload) {
   }
 }
 
+function syncConversationSenderAvatar(conversation, userId, avatar) {
+  conversation.messages.forEach((message) => {
+    if (message.senderId?.toString() === userId.toString()) {
+      message.senderAvatar = avatar || "";
+    }
+  });
+}
+
 async function getPopulatedConversation(conversationId) {
   return ChatConversation.findById(conversationId)
     .populate("userId", "name username email phone role avatar")
     .populate("assignedTo", "name username role avatar");
+}
+
+async function syncBotAvatar(req, avatar) {
+  const conversations = await ChatConversation.find({
+    "messages.senderRole": "Bot",
+  }).select("_id");
+
+  if (conversations.length === 0) {
+    return;
+  }
+
+  await ChatConversation.updateMany(
+    {
+      "messages.senderRole": "Bot",
+    },
+    {
+      $set: {
+        "messages.$[message].senderAvatar": avatar || "",
+      },
+    },
+    {
+      arrayFilters: [
+        {
+          "message.senderRole": "Bot",
+        },
+      ],
+    },
+  );
+
+  const populatedConversations = await Promise.all(
+    conversations.map((conversation) =>
+      getPopulatedConversation(conversation._id),
+    ),
+  );
+
+  populatedConversations.filter(Boolean).forEach((conversation) => {
+    emitToUser(req, conversation.userId._id, "chat:updated", conversation);
+    emitToAdmins(req, "chat:updated", conversation);
+    emitToAdmins(req, "ticket:updated", conversation);
+  });
 }
 
 router.get("/me", async (req, res) => {
@@ -147,6 +195,7 @@ router.patch("/bot-setting", async (req, res) => {
     } = req.body;
 
     const setting = await getBotSetting();
+    const previousBotAvatar = setting.botAvatar || "";
 
     if (botName !== undefined) {
       setting.botName = botName;
@@ -202,6 +251,13 @@ router.patch("/bot-setting", async (req, res) => {
     }
 
     await setting.save();
+
+    if (
+      (botAvatar !== undefined || avatar !== undefined) &&
+      setting.botAvatar !== previousBotAvatar
+    ) {
+      await syncBotAvatar(req, setting.botAvatar);
+    }
 
     return res.json({
       message: "Lưu setup bot thành công.",
@@ -418,6 +474,8 @@ router.post("/tickets/:id/reply", upload.array("files", 5), async (req, res) => 
         size: 0,
       });
     }
+
+    syncConversationSenderAvatar(conversation, req.user._id, req.user.avatar);
 
     conversation.messages.push({
       senderRole: req.user.role,
