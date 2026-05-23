@@ -9,8 +9,7 @@ Repository: https://github.com/bofoohank/otto-labs
 ```text
 .
 ├── backend/   # Express.js API, MongoDB, Socket.IO
-├── frontend/  # Next.js app
-└── app.config.json
+└── frontend/  # Next.js app
 ```
 
 ## Cong nghe chinh
@@ -39,7 +38,7 @@ npm install
 
 ## Bien moi truong
 
-Tao file `backend/.env`:
+Tao file `.env` o thu muc goc:
 
 ```env
 MONGODB_URI=mongodb://localhost:27017/otto-labs
@@ -48,12 +47,12 @@ MAIL_USER=your-email@example.com
 MAIL_PASS=your-email-password-or-app-password
 PORT=4000
 HOST=localhost
+FRONTEND_HOST=localhost
+FRONTEND_PORT=3000
 FRONTEND_URL=http://localhost:3000
-```
-
-Tao file `frontend/.env.local`:
-
-```env
+BACKEND_HOST=localhost
+BACKEND_PORT=4000
+BACKEND_URL=http://localhost:4000
 NEXT_PUBLIC_API_URL=http://localhost:4000
 NEXT_PUBLIC_FRONTEND_HOST=localhost
 NEXT_PUBLIC_FRONTEND_PORT=3000
@@ -63,7 +62,7 @@ NEXT_PUBLIC_BACKEND_PORT=4000
 NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
 ```
 
-Khong commit cac file `.env*` len Git.
+Khong commit file `.env` len Git.
 
 ## Chay development
 

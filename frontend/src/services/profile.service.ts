@@ -14,7 +14,14 @@ export type ProfilePayload = {
   name: string;
   email: string;
   phone: string;
+  address: string;
   avatar: string;
+};
+
+export type PasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 };
 
 export function getProfile(token: string) {
@@ -27,6 +34,16 @@ export function getProfile(token: string) {
 
 export function updateProfile(token: string, payload: ProfilePayload) {
   return apiJson<UserResponse>("/api/users/me", {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updatePassword(token: string, payload: PasswordPayload) {
+  return apiJson<MessageResponse>("/api/users/me/password", {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${token}`,

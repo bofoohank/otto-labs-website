@@ -1,4 +1,5 @@
 import express from "express";
+import bcrypt from "bcryptjs";
 
 import User from "../models/User.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
@@ -25,6 +26,7 @@ function toPublicUser(user) {
     username: user.username,
     email: user.email,
     phone: user.phone,
+    address: user.address,
     avatar: user.avatar,
     emailVerified: user.emailVerified,
     phoneVerified: user.phoneVerified,
@@ -39,7 +41,7 @@ router.get("/me", authMiddleware, async (req, res) => {
 
 router.patch("/me", authMiddleware, async (req, res) => {
   try {
-    const { name, email, phone, avatar } = req.body;
+    const { name, email, phone, address, avatar } = req.body;
 
     const user = await User.findById(req.user._id);
 
@@ -50,6 +52,7 @@ router.patch("/me", authMiddleware, async (req, res) => {
     }
 
     if (name) user.name = name;
+    if (address !== undefined) user.address = address;
     if (avatar !== undefined) user.avatar = avatar;
 
     if (email && email !== user.email) {
@@ -105,6 +108,60 @@ router.patch("/me", authMiddleware, async (req, res) => {
 
     return res.status(500).json({
       message: "Lỗi server khi cập nhật hồ sơ.",
+    });
+  }
+});
+
+router.patch("/me/password", authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        message: "Vui lòng nhập đầy đủ thông tin đổi mật khẩu.",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        message: "Mật khẩu mới phải có ít nhất 6 ký tự.",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        message: "Mật khẩu mới nhập lại không khớp.",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Không tìm thấy tài khoản.",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Mật khẩu cũ không đúng.",
+      });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+
+    await user.save();
+
+    return res.json({
+      message: "Đổi mật khẩu thành công.",
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Không thể đổi mật khẩu.",
     });
   }
 });

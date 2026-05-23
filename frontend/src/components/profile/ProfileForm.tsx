@@ -4,14 +4,19 @@ import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 
 import type { User } from "@/types/user";
-import type { ProfilePayload } from "@/services/profile.service";
+import type {
+  PasswordPayload,
+  ProfilePayload,
+} from "@/services/profile.service";
 
 type Props = {
   user: User;
-  loading: boolean;
 
   formData: ProfilePayload;
   onChangeFormData: (data: ProfilePayload) => void;
+  passwordData: PasswordPayload;
+  passwordLoading: boolean;
+  onChangePasswordData: (data: PasswordPayload) => void;
 
   sendingEmailCode: boolean;
   sendingPhoneCode: boolean;
@@ -29,6 +34,7 @@ type Props = {
   onChangePhoneCode: (value: string) => void;
 
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  onSubmitPassword: (e: React.FormEvent<HTMLFormElement>) => void;
 
   onSendEmailCode: () => void;
   onVerifyEmailCode: () => void;
@@ -39,9 +45,11 @@ type Props = {
 
 export function ProfileForm({
   user,
-  loading,
   formData,
   onChangeFormData,
+  passwordData,
+  passwordLoading,
+  onChangePasswordData,
   sendingEmailCode,
   sendingPhoneCode,
   showEmailCodeInput,
@@ -53,57 +61,75 @@ export function ProfileForm({
   onChangeEmailCode,
   onChangePhoneCode,
   onSubmit,
+  onSubmitPassword,
   onSendEmailCode,
   onVerifyEmailCode,
   onSendPhoneCode,
   onVerifyPhoneCode,
 }: Props) {
   return (
-    <section className="min-h-0 overflow-hidden rounded-[1.5rem] border border-orange-500/20 bg-neutral-950">
-      <form onSubmit={onSubmit} className="flex h-full flex-col p-5">
-        <div className="shrink-0 border-b border-white/10 pb-4">
-          <p className="text-sm font-black uppercase tracking-[0.2em] text-orange-500">
-            Hồ sơ cá nhân
+    <div className="space-y-4 rounded-2xl border border-white/10 bg-black p-4">
+      <form id="profile-info-form" onSubmit={onSubmit} className="space-y-4">
+      <section className="rounded-2xl border border-white/10 bg-neutral-950 p-4">
+        <div className="mb-4">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-orange-500">
+            Tài khoản
           </p>
-
-          <h2 className="mt-1 text-3xl font-black">
-            Thông tin tài khoản
-          </h2>
+          <h3 className="mt-1 text-lg font-black text-white">
+            Thông tin đăng nhập
+          </h3>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto py-5 pr-1">
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm font-black text-neutral-400">
-                Tên
-              </label>
+        <div className="grid gap-4 xl:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-sm font-black text-neutral-400">
+              Tên hiển thị
+            </label>
 
-              <input
-                placeholder="Tên"
-                value={formData.name}
-                onChange={(e) =>
-                  onChangeFormData({
-                    ...formData,
-                    name: e.target.value,
-                  })
-                }
-                className="w-full rounded-2xl border border-white/10 bg-black px-5 py-4 outline-none transition focus:border-orange-500"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-black text-neutral-400">
-                Tên đăng nhập
-              </label>
-
-              <input
-                disabled
-                value={user.username}
-                className="w-full cursor-not-allowed rounded-2xl border border-white/10 bg-neutral-900 px-5 py-4 text-neutral-500 outline-none"
-              />
-            </div>
+            <input
+              placeholder="Tên hiển thị"
+              value={formData.name}
+              onChange={(e) =>
+                onChangeFormData({
+                  ...formData,
+                  name: e.target.value,
+                })
+              }
+              className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 outline-none transition focus:border-orange-500"
+            />
           </div>
 
+          <div>
+            <label className="mb-2 block text-sm font-black text-neutral-400">
+              Tên đăng nhập
+            </label>
+
+            <input
+              disabled
+              value={user.username}
+              className="w-full cursor-not-allowed rounded-xl border border-white/10 bg-black/60 px-4 py-3 text-neutral-500 outline-none"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-white/10 bg-neutral-950 p-4">
+        <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-orange-500">
+              Liên hệ
+            </p>
+            <h3 className="mt-1 text-lg font-black text-white">
+              Xác thực tài khoản
+            </h3>
+          </div>
+
+          <p className="text-xs font-bold text-neutral-500">
+            Gmail và số điện thoại dùng để nhận cập nhật đơn hàng.
+          </p>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-2">
           <VerifyField
             label="Gmail"
             verified={!!user.emailVerified}
@@ -146,18 +172,128 @@ export function ProfileForm({
             onVerifyCode={onVerifyPhoneCode}
           />
         </div>
+      </section>
 
-        <div className="shrink-0 border-t border-white/10 pt-4">
+      <section className="rounded-2xl border border-white/10 bg-neutral-950 p-4">
+        <div className="mb-4">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-orange-500">
+            Nhận hàng
+          </p>
+          <h3 className="mt-1 text-lg font-black text-white">
+            Địa chỉ giao hàng
+          </h3>
+        </div>
+
+        <label className="mb-2 block text-sm font-black text-neutral-400">
+          Địa chỉ nhận hàng
+        </label>
+
+        <textarea
+          rows={4}
+          placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"
+          value={formData.address}
+          onChange={(e) =>
+            onChangeFormData({
+              ...formData,
+              address: e.target.value,
+            })
+          }
+          className="w-full resize-none rounded-xl border border-white/10 bg-black px-4 py-3 outline-none transition focus:border-orange-500"
+        />
+      </section>
+      </form>
+
+      <form
+        onSubmit={onSubmitPassword}
+        className="rounded-2xl border border-white/10 bg-neutral-950 p-4"
+      >
+        <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-orange-500">
+              Bảo mật
+            </p>
+            <h3 className="mt-1 text-lg font-black text-white">
+              Đổi mật khẩu
+            </h3>
+          </div>
+
+          <p className="text-xs font-bold text-neutral-500">
+            Mật khẩu mới tối thiểu 6 ký tự.
+          </p>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-3">
+          <PasswordField
+            label="Mật khẩu cũ"
+            value={passwordData.currentPassword}
+            onChange={(value) =>
+              onChangePasswordData({
+                ...passwordData,
+                currentPassword: value,
+              })
+            }
+          />
+
+          <PasswordField
+            label="Mật khẩu mới"
+            value={passwordData.newPassword}
+            onChange={(value) =>
+              onChangePasswordData({
+                ...passwordData,
+                newPassword: value,
+              })
+            }
+          />
+
+          <PasswordField
+            label="Nhập lại mật khẩu mới"
+            value={passwordData.confirmPassword}
+            onChange={(value) =>
+              onChangePasswordData({
+                ...passwordData,
+                confirmPassword: value,
+              })
+            }
+          />
+        </div>
+
+        <div className="mt-4 flex justify-end">
           <button
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-orange-500 px-6 py-4 font-black text-white transition hover:bg-orange-400 disabled:opacity-60"
+            type="submit"
+            disabled={passwordLoading}
+            className="flex h-11 items-center justify-center rounded-xl border border-orange-500/30 px-5 text-sm font-black text-orange-500 transition hover:bg-orange-500 hover:text-white disabled:opacity-60"
           >
-            {loading && <Loader2 className="animate-spin" />}
-            Lưu
+            {passwordLoading && (
+              <Loader2 className="mr-2 animate-spin" size={18} />
+            )}
+            Đổi mật khẩu
           </button>
         </div>
       </form>
-    </section>
+    </div>
+  );
+}
+
+type PasswordFieldProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+};
+
+function PasswordField({ label, value, onChange }: PasswordFieldProps) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-black text-neutral-400">
+        {label}
+      </label>
+
+      <input
+        type="password"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 outline-none transition focus:border-orange-500"
+      />
+    </div>
   );
 }
 
@@ -198,28 +334,34 @@ function VerifyField({
   onVerifyCode,
 }: VerifyFieldProps) {
   return (
-    <div>
+    <div className="rounded-xl border border-white/10 bg-black p-3">
       <label className="mb-2 flex items-center justify-between text-sm font-black text-neutral-400">
         <span>{label}</span>
 
-        <span className={verified ? "text-green-400" : "text-orange-500"}>
+        <span
+          className={`rounded-full border px-2.5 py-1 text-[11px] ${
+            verified
+              ? "border-green-500/30 bg-green-500/10 text-green-400"
+              : "border-orange-500/30 bg-orange-500/10 text-orange-400"
+          }`}
+        >
           {verified ? "Đã xác nhận" : "Chưa xác nhận"}
         </span>
       </label>
 
-      <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
+      <div className="grid gap-2 xl:grid-cols-[1fr_auto]">
         <input
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChangeValue(e.target.value)}
-          className="w-full rounded-2xl border border-white/10 bg-black px-5 py-4 outline-none transition focus:border-orange-500"
+          className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 outline-none transition focus:border-orange-500"
         />
 
         <button
           type="button"
           onClick={onSendCode}
           disabled={sending || cooldown > 0}
-          className="rounded-2xl bg-orange-500 px-5 py-4 font-black text-white transition hover:bg-orange-400 disabled:opacity-60"
+          className="h-12 rounded-xl bg-orange-500 px-4 text-sm font-black text-white transition hover:bg-orange-400 disabled:opacity-60"
         >
           {sending
             ? "Đang gửi..."
@@ -239,19 +381,19 @@ function VerifyField({
             opacity: 1,
             y: 0,
           }}
-          className="mt-3 grid gap-3 lg:grid-cols-[1fr_auto]"
+          className="mt-2 grid gap-2 xl:grid-cols-[1fr_auto]"
         >
           <input
             placeholder={codePlaceholder}
             value={codeValue}
             onChange={(e) => onChangeCode(e.target.value)}
-            className="w-full rounded-2xl border border-white/10 bg-black px-5 py-4 outline-none transition focus:border-orange-500"
+            className="w-full rounded-xl border border-white/10 bg-black px-4 py-3 outline-none transition focus:border-orange-500"
           />
 
           <button
             type="button"
             onClick={onVerifyCode}
-            className="rounded-2xl border border-orange-500/30 px-5 py-4 font-black text-orange-500 transition hover:bg-orange-500 hover:text-white"
+            className="h-12 rounded-xl border border-orange-500/30 px-4 text-sm font-black text-orange-500 transition hover:bg-orange-500 hover:text-white"
           >
             Xác nhận
           </button>

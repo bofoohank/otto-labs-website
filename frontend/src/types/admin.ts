@@ -7,7 +7,7 @@ import type {
   KeywordReply,
 } from "./bot";
 
-export type AdminTab = "members" | "bot" | "support";
+export type AdminTab = "members" | "bot" | "support" | "orders";
 
 export type MemberTab = "info" | "roles";
 

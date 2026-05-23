@@ -1,12 +1,15 @@
-import fs from "fs";
+import dotenv from "dotenv";
 
-const configUrl = new URL("../../../app.config.json", import.meta.url);
-const appConfig = JSON.parse(fs.readFileSync(configUrl, "utf8"));
+dotenv.config({
+  path: new URL("../../../.env", import.meta.url),
+});
 
-export const FRONTEND_HOST = appConfig.frontend.host;
-export const FRONTEND_PORT = appConfig.frontend.port;
-export const FRONTEND_URL = appConfig.frontend.url;
+export const FRONTEND_HOST = process.env.FRONTEND_HOST || "localhost";
+export const FRONTEND_PORT = Number(process.env.FRONTEND_PORT || 3000);
+export const FRONTEND_URL =
+  process.env.FRONTEND_URL || `http://${FRONTEND_HOST}:${FRONTEND_PORT}`;
 
-export const BACKEND_HOST = appConfig.backend.host;
-export const BACKEND_PORT = appConfig.backend.port;
-export const BACKEND_URL = appConfig.backend.url;
+export const BACKEND_HOST = process.env.HOST || process.env.BACKEND_HOST || "localhost";
+export const BACKEND_PORT = Number(process.env.PORT || process.env.BACKEND_PORT || 4000);
+export const BACKEND_URL =
+  process.env.BACKEND_URL || `http://${BACKEND_HOST}:${BACKEND_PORT}`;

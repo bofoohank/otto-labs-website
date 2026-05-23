@@ -7,12 +7,18 @@ type Props = {
   sidebar: React.ReactNode;
   children: React.ReactNode;
   sidebarCollapsed?: boolean;
+  eyebrow?: string;
+  title?: string;
+  headerActions?: React.ReactNode;
 };
 
 export function AdminShell({
   sidebar,
   children,
   sidebarCollapsed = false,
+  eyebrow = "Otto Labs",
+  title = "Admin Panel",
+  headerActions,
 }: Props) {
   const [uiScale, setUiScale] = useState(1);
 
@@ -42,20 +48,22 @@ export function AdminShell({
         <div className="mb-2 flex h-[clamp(54px,8dvh,72px)] shrink-0 items-center justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-orange-500">
-              Otto Labs
+              {eyebrow}
             </p>
 
             <h1 className="text-[clamp(1.35rem,2.3vw,1.8rem)] font-black leading-tight">
-              Admin Panel
+              {title}
             </h1>
           </div>
 
-          <Link
-            href="/"
-            className="inline-flex h-10 shrink-0 items-center rounded-xl border border-orange-500/30 px-4 text-sm font-black text-orange-500 transition hover:bg-orange-500 hover:text-white"
-          >
-            Về trang chủ
-          </Link>
+          {headerActions || (
+            <Link
+              href="/"
+              className="inline-flex h-10 shrink-0 items-center rounded-xl border border-orange-500/30 px-4 text-sm font-black text-orange-500 transition hover:bg-orange-500 hover:text-white"
+            >
+              Về trang chủ
+            </Link>
+          )}
         </div>
 
         <div

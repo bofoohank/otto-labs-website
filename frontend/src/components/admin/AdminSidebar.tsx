@@ -1,6 +1,13 @@
 "use client";
 
-import { Bot, Maximize2, MessageCircle, Minimize2, Users } from "lucide-react";
+import {
+  Bot,
+  Maximize2,
+  MessageCircle,
+  Minimize2,
+  Package,
+  Users,
+} from "lucide-react";
 import type { AdminTab } from "@/types/admin";
 
 type Props = {
@@ -67,6 +74,7 @@ export function AdminSidebar({
 
       <div className="space-y-1.5">
         {sidebarButton("members", "Member", <Users size={20} />)}
+        {sidebarButton("orders", "Đơn hàng", <Package size={20} />)}
         {sidebarButton("bot", "Setup", <Bot size={20} />)}
 
         <button

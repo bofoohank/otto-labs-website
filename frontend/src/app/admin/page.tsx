@@ -7,6 +7,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { BotSettingsTab } from "@/components/admin/BotSettingsTab";
 import { MembersTab } from "@/components/admin/MembersTab";
+import { OrdersTab } from "@/components/admin/OrdersTab";
 import { SupportTab } from "@/components/admin/SupportTab";
 import { ToastStack } from "@/components/ui/ToastStack";
 import { AvatarCropModal } from "@/components/ui/AvatarCropModal";
@@ -118,6 +119,8 @@ export default function AdminPage() {
           onUploadKeywordMedia={admin.uploadKeywordMedia}
         />
       )}
+
+      {activeTab === "orders" && <OrdersTab />}
 
       {activeTab === "support" && (
         <SupportTab

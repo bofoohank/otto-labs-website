@@ -7,6 +7,7 @@ export type User = {
   username: string;
   email: string;
   phone?: string;
+  address?: string;
   referralCode?: string;
   avatar?: string;
   role?: Role;

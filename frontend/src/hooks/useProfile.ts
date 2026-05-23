@@ -6,9 +6,11 @@ import {
   getProfile,
   sendEmailVerifyCode,
   sendPhoneVerifyCode,
+  updatePassword as updatePasswordApi,
   updateProfile as updateProfileApi,
   verifyEmailCode as verifyEmailCodeApi,
   verifyPhoneCode as verifyPhoneCodeApi,
+  type PasswordPayload,
   type ProfilePayload,
 } from "@/services/profile.service";
 
@@ -31,13 +33,21 @@ const initialFormData: ProfilePayload = {
   name: "",
   email: "",
   phone: "",
+  address: "",
   avatar: "",
+};
+
+const initialPasswordData: PasswordPayload = {
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
 };
 
 export function useProfile({ showToast }: Props) {
   const [user, setUser] = useState<User | null>(null);
 
   const [loading, setLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
 
   const [sendingEmailCode, setSendingEmailCode] = useState(false);
@@ -54,6 +64,8 @@ export function useProfile({ showToast }: Props) {
 
   const [formData, setFormData] =
     useState<ProfilePayload>(initialFormData);
+  const [passwordData, setPasswordData] =
+    useState<PasswordPayload>(initialPasswordData);
 
   function logoutAndRedirect() {
     clearSession();
@@ -68,6 +80,7 @@ export function useProfile({ showToast }: Props) {
       name: nextUser.name || "",
       email: nextUser.email || "",
       phone: nextUser.phone || "",
+      address: nextUser.address || "",
       avatar: nextUser.avatar || "",
     });
   }
@@ -148,6 +161,46 @@ export function useProfile({ showToast }: Props) {
     }
 
     setLoading(false);
+  }
+
+  async function updatePassword(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const token = getToken();
+
+    if (!token) {
+      logoutAndRedirect();
+      return;
+    }
+
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      showToast("error", "Vui lòng nhập đầy đủ thông tin đổi mật khẩu.");
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showToast("error", "Mật khẩu mới nhập lại không khớp.");
+      return;
+    }
+
+    setPasswordLoading(true);
+
+    try {
+      const data = await updatePasswordApi(token, passwordData);
+
+      setPasswordData(initialPasswordData);
+
+      showToast("success", data.message || "Đổi mật khẩu thành công.");
+    } catch (error) {
+      console.error(error);
+
+      showToast(
+        "error",
+        error instanceof Error ? error.message : "Không thể đổi mật khẩu.",
+      );
+    }
+
+    setPasswordLoading(false);
   }
 
   function handleAvatarFile(file: File, croppedDataUrl?: string) {
@@ -365,9 +418,12 @@ export function useProfile({ showToast }: Props) {
     user,
     pageLoading,
     loading,
+    passwordLoading,
 
     formData,
     setFormData,
+    passwordData,
+    setPasswordData,
 
     sendingEmailCode,
     sendingPhoneCode,
@@ -385,6 +441,7 @@ export function useProfile({ showToast }: Props) {
     setPhoneCode,
 
     updateProfile,
+    updatePassword,
     handleAvatarFile,
 
     sendEmailCode,

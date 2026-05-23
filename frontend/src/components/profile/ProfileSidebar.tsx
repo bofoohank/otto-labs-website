@@ -2,22 +2,34 @@
 
 import type { RefObject } from "react";
 import Image from "next/image";
-import { Camera, Crown, ShieldCheck } from "lucide-react";
+import {
+  Camera,
+  Crown,
+  Package,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 
 import type { User } from "@/types/user";
+
+export type ProfileTab = "info" | "orders";
 
 type Props = {
   user: User;
   avatar: string;
+  activeTab: ProfileTab;
   fileInputRef: RefObject<HTMLInputElement | null>;
   onAvatarFile: (file: File, dataUrl?: string) => void;
+  onChangeTab: (tab: ProfileTab) => void;
 };
 
 export function ProfileSidebar({
   user,
   avatar,
+  activeTab,
   fileInputRef,
   onAvatarFile,
+  onChangeTab,
 }: Props) {
   function roleIcon() {
     if (user.role === "Admin") {
@@ -31,20 +43,39 @@ export function ProfileSidebar({
     return null;
   }
 
+  function sidebarButton(tab: ProfileTab, label: string, icon: React.ReactNode) {
+    const active = activeTab === tab;
+
+    return (
+      <button
+        type="button"
+        onClick={() => onChangeTab(tab)}
+        className={`flex h-12 w-full items-center gap-2 rounded-xl px-3 text-left text-sm font-black transition ${
+          active
+            ? "bg-orange-500 text-white shadow-[0_0_35px_rgba(249,115,22,0.25)]"
+            : "text-neutral-400 hover:bg-white/5 hover:text-white"
+        }`}
+      >
+        {icon}
+        {label}
+      </button>
+    );
+  }
+
   return (
-    <aside className="flex min-h-0 flex-col rounded-[1.5rem] border border-orange-500/20 bg-neutral-950 p-5">
-      <div className="flex flex-1 flex-col items-center justify-center text-center">
+    <aside className="admin-menu-slide-in flex min-h-0 flex-col rounded-2xl border border-orange-500/20 bg-neutral-950 p-3">
+      <div className="rounded-xl border border-white/10 bg-black p-4 text-center">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="group relative grid h-36 w-36 overflow-hidden rounded-[2rem] bg-orange-500 text-5xl font-black transition hover:scale-105"
+          className="group relative mx-auto grid h-28 w-28 overflow-hidden rounded-2xl bg-orange-500 text-4xl font-black transition hover:scale-105"
         >
           {avatar ? (
             <Image
               src={avatar}
               alt="Avatar"
               fill
-              sizes="144px"
+              sizes="112px"
               unoptimized
               className="h-full w-full object-cover"
             />
@@ -73,17 +104,30 @@ export function ProfileSidebar({
           }}
         />
 
-        <div className="mt-5">
+        <div className="mt-4">
           <div className="flex items-center justify-center gap-3">
             {roleIcon()}
-            <h1 className="text-3xl font-black">{user.name}</h1>
+            <h1 className="min-w-0 truncate text-xl font-black">{user.name}</h1>
           </div>
 
-          <p className="mt-2 text-neutral-400">@{user.username}</p>
+          <p className="mt-1 truncate text-sm text-neutral-400">
+            @{user.username}
+          </p>
 
-          <div className="mt-5 inline-flex rounded-full border border-white/10 bg-black px-4 py-2 text-sm font-black text-neutral-300">
+          <div className="mt-4 inline-flex rounded-full border border-white/10 bg-neutral-950 px-4 py-2 text-xs font-black text-neutral-300">
             {user.role || "Member"}
           </div>
+        </div>
+      </div>
+
+      <div className="mt-3 px-1 py-1">
+        <p className="mb-3 px-1 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">
+          Menu
+        </p>
+
+        <div className="space-y-1.5">
+          {sidebarButton("info", "Thông tin", <UserRound size={20} />)}
+          {sidebarButton("orders", "Đơn hàng", <Package size={20} />)}
         </div>
       </div>
     </aside>
